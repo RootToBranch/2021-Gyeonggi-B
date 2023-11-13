@@ -1,5 +1,5 @@
 # Excluding Mac System Files 
-*._DS_Store
+._DS_Store
 
 # Excluding VSCode System Files
 .vscode/

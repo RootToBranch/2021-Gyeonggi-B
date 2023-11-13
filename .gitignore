@@ -3,3 +3,6 @@
 
 # Excluding VSCode System Files
 .vscode/
+
+# Excluding PDF Files
+*.pdf

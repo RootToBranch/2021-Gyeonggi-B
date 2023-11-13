@@ -338,20 +338,26 @@ class History
 
 class CulturalProperties 
 {
-  constructor(url)
+  constructor()
   {
+    this.contentItemArr = [];
 
-    this.Pagination(url)
+    this.Pagination();
     // this.getInfo_All()
-    this.contentItem_Layout();
+    this.contentItemArr_Initial();
   }
 
-  async getInfo_All()
+  get defaultUrl()
   {
-    let data = await fetch("/xml/nihList.xml")
+    let url = new URLSearchParams(window.location.search);
+    return url
+  }
+
+  getInfo_All()
+  {
+    let data = fetch("/xml/nihList.xml")
       .then(res => res.text())
       .then(data => new DOMParser().parseFromString(data, 'application/xml'))
-    
     return data;
   }
     
@@ -363,21 +369,38 @@ class CulturalProperties
     
   }
 
-  Pagination(url)
+  Pagination(num)
   {
-    url = new URLSearchParams(url)
-    console.log(url.get("page"))
+    this.defaultUrl.get("page")
+    console.log();
   }
-
-  contentItem_Layout()
+  
+  async contentItemArr_Initial()
   {
-
-    const data = this.getInfo_All();
-
-    data.getElementsByTagName("item").forEach(child => {
-      console.log(child)
+    const data = await this.getInfo_All();
+    const items = data.getElementsByTagName("item");
+    [].forEach.call(items, (child, idx) => {
+      let item = {};
+      for(let i = 0; i < child.children.length; i++) {
+        item[child.children.item(i).nodeName] = child.children.item(i).nodeName;
+        // ((child.children.item(i)));
+        console.log(child.children.item(i));
+      }
+      
+      this.contentItemArr.push(item);
     });
   }
+
+  async contentItem_Layout()
+  {
+    
+    // const data = await this.getInfo_All();
+    // const items = data.getElementsByTagName("item");
+    // [].forEach.call(items, (child, idx) => {
+    //   console.log(child)
+    // });
+  }
+  
 }
 
 //ccbaCpno 로 상세 정보 구할 수 있음

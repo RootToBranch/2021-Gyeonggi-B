@@ -341,10 +341,10 @@ class CulturalProperties
   constructor()
   {
     this.contentItemArr = [];
+    this.totalCnt = 0;
 
-    this.Pagination();
+    this.referesh();
     // this.getInfo_All()
-    this.contentItemArr_Initial();
   }
 
   get defaultUrl()
@@ -353,15 +353,64 @@ class CulturalProperties
     return url
   }
 
-  getInfo_All()
+  async referesh()
   {
-    let data = fetch("/xml/nihList.xml")
-      .then(res => res.text())
-      .then(data => new DOMParser().parseFromString(data, 'application/xml'))
-    return data;
+    await this.getContentArr();
+    this.Pagination();
+    this.contentItem_Layout();
   }
-    
 
+  async getInfo_All()
+  {
+    return await fetch("/xml/nihList.xml")
+            .then(res => res.text())
+            .then(data => new DOMParser().parseFromString(data, 'application/xml'));
+  }
+  async getInfo_Item({ccbaKdcd, ccbaCtcd, ccbaAsno})
+  {
+    return await fetch(`/xml/detail/${ccbaKdcd}_${ccbaCtcd}_${ccbaAsno}`)
+      .then(res => res.text())
+      .then(data => new DOMParser().parseFromString(data, 'application/xml'));
+
+  }
+
+  async getContentArr()
+  {
+    const data = await this.getInfo_All();  
+    const items = data.getElementsByTagName("item");
+    let totalCnt = 0; 
+    [].forEach.call(items, (child, idx) => {
+      let item = {};
+      for(let i = 0; i < child.children.length; i++) {
+        let temp = child.children.item(i);
+        item[temp.nodeName] = temp.innerHTML;
+      }
+      (this.contentItemArr).push(item);
+      totalCnt = idx;
+    });
+
+    this.totalCnt = totalCnt + 1;
+    return true;
+  }
+  async getContentItem()
+  {
+    const data = await this.getInfo_Item();  
+    const item = data.getElementsByTagName("item");
+    let totalCnt = 0; 
+      let info = {};
+      for(let i = 0; i < item.children.length; i++) {
+        let temp = item.children.item(i);
+        info[temp.nodeName] = temp.innerHTML;
+      }
+    
+    return info;
+  }
+
+  Pagination(num)
+  {
+    this.defaultUrl.get("page")
+    // console.log(this.contentItemArr);
+  }
   setContentItem()
   {
     const row = document.createElement("div");
@@ -369,31 +418,14 @@ class CulturalProperties
     
   }
 
-  Pagination(num)
+  contentItem_Layout(num = 1)
   {
-    this.defaultUrl.get("page")
-    console.log();
-  }
-  
-  async contentItemArr_Initial()
-  {
-    const data = await this.getInfo_All();
-    const items = data.getElementsByTagName("item");
-    [].forEach.call(items, (child, idx) => {
-      let item = {};
-      for(let i = 0; i < child.children.length; i++) {
-        item[child.children.item(i).nodeName] = child.children.item(i).nodeName;
-        // ((child.children.item(i)));
-        console.log(child.children.item(i));
-      }
+    let {sn, no, ccbaKdcd, ccbaCtcd, ccbaAsno} = (this.contentItemArr)[num];
+    let returnValue = `
       
-      this.contentItemArr.push(item);
-    });
-  }
-
-  async contentItem_Layout()
-  {
     
+    `
+    return 
     // const data = await this.getInfo_All();
     // const items = data.getElementsByTagName("item");
     // [].forEach.call(items, (child, idx) => {
@@ -405,4 +437,4 @@ class CulturalProperties
 
 //ccbaCpno 로 상세 정보 구할 수 있음
 if(location.pathname.startsWith("/history")) new History();
-if(location.pathname.startsWith("/culturalProperties")) new CulturalProperties(window.location.search);
+if(location.pathname.startsWith("/culturalProperties")) new CulturalProperties();

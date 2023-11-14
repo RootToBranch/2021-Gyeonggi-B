@@ -356,8 +356,8 @@ class CulturalProperties
   async referesh()
   {
     await this.getContentArr();
-    this.Pagination();
-    this.contentItem_Layout();
+    await this.Pagination();
+    // this.contentItem_Layout();
   }
 
   async getInfo_All()
@@ -368,7 +368,7 @@ class CulturalProperties
   }
   async getInfo_Item({ccbaKdcd, ccbaCtcd, ccbaAsno})
   {
-    return await fetch(`/xml/detail/${ccbaKdcd}_${ccbaCtcd}_${ccbaAsno}`)
+    return await fetch(`/xml/detail/${ccbaKdcd}_${ccbaCtcd}_${ccbaAsno}.xml`)
       .then(res => res.text())
       .then(data => new DOMParser().parseFromString(data, 'application/xml'));
 
@@ -392,40 +392,49 @@ class CulturalProperties
     this.totalCnt = totalCnt + 1;
     return true;
   }
-  async getContentItem()
+  contentItem_obj(data)
   {
-    const data = await this.getInfo_Item();  
-    const item = data.getElementsByTagName("item");
-    let totalCnt = 0; 
-      let info = {};
-      for(let i = 0; i < item.children.length; i++) {
-        let temp = item.children.item(i);
-        info[temp.nodeName] = temp.innerHTML;
-      }
+    const item = data[0];
+    let info = {};
+    for(let i = 0; i < item.children.length; i++) {
+      let temp = item.children.item(i);
+      info[temp.nodeName] = temp.innerHTML;
+    }
     
     return info;
   }
 
-  Pagination(num)
+  async Pagination()
   {
-    this.defaultUrl.get("page")
-    // console.log(this.contentItemArr);
+    let pageNum = this.defaultUrl.get("page") != null ? this.defaultUrl.get("page") : 1;
+    let maxItemNum = pageNum * 8;
+    for(let i = maxItemNum - 8; i <= maxItemNum - 1; i++) {
+
+      let data = await this.getInfo_Item(this.contentItemArr[i]);
+      this.contentItem_Layout(data); 
+    }
+    
   }
   setContentItem()
   {
     const row = document.createElement("div");
     row.className = "row";
     
-  }
+  } 
 
-  contentItem_Layout(num = 1)
+  contentItem_Layout(data)
   {
-    let {sn, no, ccbaKdcd, ccbaCtcd, ccbaAsno} = (this.contentItemArr)[num];
+    let resultInfo = this.contentItem_obj(data.getElementsByTagName("result"));
+    let itemInfo = this.contentItem_obj(data.getElementsByTagName("item"));
+    let {ccbaKdcd, ccbaCtcd, ccbaAsno} = resultInfo; 
+    let {imageUrl} = itemInfo;
     let returnValue = `
-      
-    
-    `
-    return 
+      <div data-id="${ccbaKdcd}_${ccbaCtcd}_${ccbaAsno}">
+        <img src="./xml/nihcImage/${imageUrl}.jpg" alt="img">
+        <span>14</span>
+      </div>
+    `;
+    return returnValue
     // const data = await this.getInfo_All();
     // const items = data.getElementsByTagName("item");
     // [].forEach.call(items, (child, idx) => {

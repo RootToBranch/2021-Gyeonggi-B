@@ -357,7 +357,6 @@ class CulturalProperties
   {
     await this.getContentArr();
     await this.Pagination();
-    // this.contentItem_Layout();
   }
 
   async getInfo_All()
@@ -392,6 +391,7 @@ class CulturalProperties
     this.totalCnt = totalCnt + 1;
     return true;
   }
+  
   contentItem_obj(data)
   {
     const item = data[0];
@@ -408,18 +408,32 @@ class CulturalProperties
   {
     let pageNum = this.defaultUrl.get("page") != null ? this.defaultUrl.get("page") : 1;
     let maxItemNum = pageNum * 8;
-    for(let i = maxItemNum - 8; i <= maxItemNum - 1; i++) {
 
+    let page = document.createElement("div");
+    page.className = "page";
+
+    for(let i = maxItemNum - 8; i <= maxItemNum - 1; i++) {
       let data = await this.getInfo_Item(this.contentItemArr[i]);
-      this.contentItem_Layout(data); 
+      let layout = this.contentItem_Layout(data);
+      
+      page.innerHTML += (layout);
     }
+    this.setContentItem(page);
     
   }
-  setContentItem()
+  setPageBtn()
   {
-    const row = document.createElement("div");
-    row.className = "row";
-    
+    let pageBar = document.querySelector(".page_bar");
+    let maxPageNum = this.totalCnt / 8 + 1;
+    for(let i = 1; i <= maxPageNum; i++)
+      pageBar.innerHTML += ""
+  }
+
+  setContentItem(page)
+  {
+    let itemList = document.querySelector("#propertiesPage .album > .item_list");
+    itemList.innerHTML = "";
+    itemList.append(page);
   } 
 
   contentItem_Layout(data)
@@ -427,14 +441,18 @@ class CulturalProperties
     let resultInfo = this.contentItem_obj(data.getElementsByTagName("result"));
     let itemInfo = this.contentItem_obj(data.getElementsByTagName("item"));
     let {ccbaKdcd, ccbaCtcd, ccbaAsno} = resultInfo; 
-    let {imageUrl} = itemInfo;
+    let {imageUrl, ccbaMnm1} = itemInfo;
+    console.log(ccbaMnm1)
+    // <![CDATA[영산줄다리기]]>
+    ccbaMnm1 = ccbaMnm1.replace(/<!\[CDATA\[^(.*)\]\]>/g, "\\$&");
+    console.log(ccbaMnm1)
     let returnValue = `
       <div data-id="${ccbaKdcd}_${ccbaCtcd}_${ccbaAsno}">
-        <img src="./xml/nihcImage/${imageUrl}.jpg" alt="img">
-        <span>14</span>
+        <img src="./xml/nihcImage/${imageUrl}" alt="img">
+        <span>${ccbaMnm1}</span>
       </div>
     `;
-    return returnValue
+    return returnValue;
     // const data = await this.getInfo_All();
     // const items = data.getElementsByTagName("item");
     // [].forEach.call(items, (child, idx) => {

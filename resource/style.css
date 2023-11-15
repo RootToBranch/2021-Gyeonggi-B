@@ -9,6 +9,10 @@ a, a:link, a:visited {
     color: black;
     text-decoration: none;
 }
+a.disabled {
+    pointer-events: none;
+    color: #d1d1d1;
+}
 
 :root {
     --currentWidth: 1280px;
@@ -905,6 +909,10 @@ k는 opacity가 활성화 되는 visual image를 알려줌 */
     border-radius: 20px;
     object-fit: cover;
 }
+#propertiesPage .section_layout_type1 .album > .item_list > .page > div > img.noImage {
+    font-size: xx-large;
+    z-index: 9;
+}
 
 #propertiesPage .section_layout_type1 .album > .item_list > .page > div > span {
     font-size: 24px;
@@ -917,6 +925,9 @@ k는 opacity가 활성화 되는 visual image를 알려줌 */
 }
 
 #propertiesPage .section_layout_type1 .page_bar > a {
+    display: flex;
+    justify-content: center;
+    align-items: center;
     width: 50px;
     height: 50px;
 }

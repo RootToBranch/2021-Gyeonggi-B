@@ -342,6 +342,7 @@ class CulturalProperties
   {
     this.contentItemArr = [];
     this.totalCnt = 0;
+    this.pageStatus = document.querySelector(".pageStatus");
 
     this.referesh();
     // this.getInfo_All()
@@ -407,10 +408,22 @@ class CulturalProperties
   async Pagination()
   {
     let pageNum = this.defaultUrl.get("page") != null ? this.defaultUrl.get("page") : 1;
+    let maxPageNum = Math.ceil(this.totalCnt / 8);
+    if(pageNum <= 0 || pageNum > maxPageNum) {
+      alert("존재하지 않는 페이지입니다.");
+      history.back();
+      return;
+    }
+    this.pageStatus.innerHTML = `${pageNum}p / ${maxPageNum}p (총 ${this.totalCnt}건)`;
     let maxItemNum = pageNum * 8;
 
     let page = document.createElement("div");
     page.className = "page";
+
+    console.log(maxItemNum, this.totalCnt)
+    if(maxItemNum - 1 > this.totalCnt) maxItemNum = this.totalCnt;
+    console.log(maxItemNum, this.totalCnt)
+    console.log("maxItemNum ", maxItemNum)
 
     for(let i = maxItemNum - 8; i <= maxItemNum - 1; i++) {
       let data = await this.getInfo_Item(this.contentItemArr[i]);
@@ -419,14 +432,40 @@ class CulturalProperties
       page.innerHTML += (layout);
     }
     this.setContentItem(page);
-    
+    this.setPageBtn(pageNum, maxPageNum)
   }
-  setPageBtn()
-  {
+  setPageBtn(currentPage, maxPageNum)
+  { 
+    let minNum;
+    let maxNum;
+    if(currentPage <= 5) {
+      minNum = 1
+      maxNum = 5;
+    } else {
+      maxNum = Math.ceil(currentPage / 5) * 5;
+      minNum = maxNum - 4;
+    }
+
     let pageBar = document.querySelector(".page_bar");
-    let maxPageNum = this.totalCnt / 8 + 1;
-    for(let i = 1; i <= maxPageNum; i++)
-      pageBar.innerHTML += ""
+    pageBar.innerHTML = "";
+    
+    let leftClass = "";
+    if(!this.numberRange(1, maxPageNum, minNum - 1)) leftClass = "disabled";
+    pageBar.innerHTML += `<a class="fa fas fa-chevron-left ${leftClass}" href="?page=${minNum - 1}"></a>`;
+
+    for(let i = minNum; i <= maxNum; i++) 
+      pageBar.innerHTML += `<a class="pageNum" href="?page=${i}">${i}</a>`;
+    
+    let rightClass = "";
+    if(!this.numberRange(1, maxPageNum, maxNum + 1)) rightClass = "disabled";
+    pageBar.innerHTML += `<a class="fa fas fa-chevron-right ${rightClass}" href="?page=${maxNum + 1}"></a>`;
+
+  }
+
+  numberRange(min, max, currentNum)
+  {
+    if( currentNum <= max && currentNum >= min) return true;
+    else return false;
   }
 
   setContentItem(page)
@@ -444,20 +483,15 @@ class CulturalProperties
     let {imageUrl, ccbaMnm1} = itemInfo;
     console.log(ccbaMnm1)
     // <![CDATA[영산줄다리기]]>
-    ccbaMnm1 = ccbaMnm1.replace(/<!\[CDATA\[^(.*)\]\]>/g, "\\$&");
-    console.log(ccbaMnm1)
+    ccbaMnm1 = ccbaMnm1.replace(/<!\[CDATA\[/g, "").replace(/]\]>/g, "");
+
     let returnValue = `
       <div data-id="${ccbaKdcd}_${ccbaCtcd}_${ccbaAsno}">
-        <img src="./xml/nihcImage/${imageUrl}" alt="img">
+        <img src="./xml/nihcImage/${imageUrl}" alt="${imageUrl == "" ? 'noImage' : ""}" class="${imageUrl == "" ? 'noImage' : ""}">
         <span>${ccbaMnm1}</span>
       </div>
     `;
     return returnValue;
-    // const data = await this.getInfo_All();
-    // const items = data.getElementsByTagName("item");
-    // [].forEach.call(items, (child, idx) => {
-    //   console.log(child)
-    // });
   }
   
 }
